@@ -1,0 +1,32 @@
+syntax = "proto3";
+package kohi.v1;
+
+message Bean {
+  enum Variety {
+    VARIETY_UNSPECIFIED = 0;
+    VARIETY_ROBUSTA = 1;
+    VARIETY_ARABICA = 2;
+  }
+  Variety variety = 1;
+  float amount = 2;
+}
+
+message Milk {
+  enum Variety {
+    VARIETY_UNSPECIFIED = 0;
+    VARIETY_FULL_CREAM = 1;
+    VARIETY_SOY = 2;
+    VARIETY_ALMOND = 3;
+    VARIETY_RICE = 4;
+  }
+  Variety variety = 1;
+  float amount = 2;
+}
+
+
+message Coffee {
+  Bean beans = 1;
+  float water = 2;
+  Milk milk = 3;
+  bool ice = 4;
+}
