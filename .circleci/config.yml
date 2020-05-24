@@ -1,5 +1,18 @@
 version: 2.1
 
+commands:
+  generate_package:
+    description: generate package from Protobuf definitions
+    parameters:
+      language:
+        type: string
+    steps:
+      - run:
+          name: Get artifact for << parameters.language >>
+          command: |
+            entrypoint.sh -o generated/<< parameters.language >>/ -l << parameters.language >> -f kohi/**/*.proto
+            ls -R generated/<< parameters.language >>
+
 jobs:
   proto:
     docker:
@@ -7,8 +20,28 @@ jobs:
     steps:
       - checkout
       - run: buf check lint
+  publish:
+    docker:
+      - image: namely/protoc-all
+    steps:
+      - checkout
+      - generate_package:
+          language: ruby
+      - generate_package:
+          language: python
 
 workflows:
   validation:
     jobs:
       - proto
+      - publish:
+          requires:
+            - proto
+          filters:
+            branches:
+              only: test_publish
+          # filters:
+          #   branches:
+          #     only: master
+          #   tags:
+          #     only: /^\d+\.\d+\.\d+$/
