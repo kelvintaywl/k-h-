@@ -34,12 +34,16 @@ commands:
             git clone --depth=1 https://kelvintaywl:$CI_GITHUB_TOKEN@github.com/kelvintaywl/kohi_<< parameters.language >>.git
             cp -r workspace/generated/<< parameters.language>>/kohi kohi_<< parameters.language >>/lib
             cd kohi_<< parameters.language >>
-            git checkout -b $CIRCLE_BRANCH
             git add .
-            export VERSION=0.1.1
+            export LATEST_VERSION=${$(semver -c $(git tag -l --sort=-v:refname | head -n 1)):-'0.0.0'}
+            semver -r ">=$LATEST_VERSION" $CIRCLE_TAG
+            export VERSION=$(semver -c $CIRCLE_TAG)
+            # TODO: fix this for different languages (assumption: ruby gem)
+            sed -i "s/'$LATEST_VERSION'/'$VERSION'/" lib/kohi/version.rb
             git commit -m "[automated] feat: library upgrade to $VERSION"
+            git tag -a $CIRCLE_TAG -m "[automated] release $VERSION"
             git log -n 1
-            git push -u origin $CIRCLE_BRANCH
+            git push --tags -u origin master
 
 jobs:
   proto:
@@ -60,9 +64,13 @@ jobs:
 
   diff:
     docker:
-      - image: cimg/base:2020.01
+      - image: circleci/node:lts
     steps:
       - checkout
+      - run:
+          name: deps
+          command: |
+            npm install -g semver
       - git_diff:
           language: ruby
 
@@ -82,10 +90,6 @@ workflows:
             - publish
           filters:
             branches:
-              only: test_publish
-          # filters:
-          # filters:
-          #   branches:
-          #     only: master
-          #   tags:
-          #     only: /^\d+\.\d+\.\d+$/
+              only: master
+            tags:
+              only: /^\d+\.\d+\.\d+$/
