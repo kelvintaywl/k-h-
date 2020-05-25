@@ -35,11 +35,12 @@ commands:
             cp -r workspace/generated/<< parameters.language>>/kohi kohi_<< parameters.language >>/lib
             cd kohi_<< parameters.language >>
             git add .
-            export LATEST_VERSION=${$(semver -c $(git tag -l --sort=-v:refname | head -n 1)):-'0.0.0'}
-            semver -r ">=$LATEST_VERSION" $CIRCLE_TAG
+            export CUR_VERSION=$(git tag -l --sort=-v:refname | head -n 1)
+            export CUR_VERSION=$(semver -c $CUR_VERSION)
+            semver -r ">=$CUR_VERSION" $CIRCLE_TAG
             export VERSION=$(semver -c $CIRCLE_TAG)
             # TODO: fix this for different languages (assumption: ruby gem)
-            sed -i "s/'$LATEST_VERSION'/'$VERSION'/" lib/kohi/version.rb
+            sed -i "s/'$CUR_VERSION'/'$VERSION'/" lib/kohi/version.rb
             git commit -m "[automated] feat: library upgrade to $VERSION"
             git tag -a $CIRCLE_TAG -m "[automated] release $VERSION"
             git log -n 1
@@ -70,7 +71,7 @@ jobs:
       - run:
           name: deps
           command: |
-            npm install -g semver
+            npm install semver
       - git_diff:
           language: ruby
 
@@ -78,18 +79,16 @@ workflows:
   validation:
     jobs:
       - proto
+  release:
+    jobs:
+      - proto
       - publish:
           requires:
             - proto
-          filters:
-            branches:
-              only: test_publish
       - diff:
           context: github_ci
           requires:
             - publish
           filters:
-            branches:
-              only: master
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /^v\d+\.\d+\.\d+$/
