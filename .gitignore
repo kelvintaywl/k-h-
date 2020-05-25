@@ -1,0 +1,4 @@
+# generated files from namely/protoc-all Docker
+generated/python/*
+generated/ruby/*
+!generated/*/.gitkeep
