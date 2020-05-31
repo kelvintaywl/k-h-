@@ -78,12 +78,12 @@ jobs:
           language: ruby
 
 workflows:
-  validate-release:
+  validation:
     jobs:
       - proto
+  release:
+    jobs:
       - publish:
-          requires:
-            - proto
           filters:
             branches:
               ignore: /.*/
