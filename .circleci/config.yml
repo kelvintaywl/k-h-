@@ -78,19 +78,23 @@ jobs:
           language: ruby
 
 workflows:
-  validation:
-    jobs:
-      - proto
-  release:
+  validate-release:
     jobs:
       - proto
       - publish:
           requires:
             - proto
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
       - diff:
           context: github_ci
           requires:
             - publish
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v\d+\.\d+\.\d+$/
