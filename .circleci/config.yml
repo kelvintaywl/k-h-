@@ -37,15 +37,15 @@ commands:
             git clone --depth=1 https://kelvintaywl:$CI_GITHUB_TOKEN@github.com/kelvintaywl/kohi_<< parameters.language >>.git
             cp -r workspace/generated/<< parameters.language>>/kohi kohi_<< parameters.language >>/lib
             cd kohi_<< parameters.language >>
-            git add .
-            export CUR_VERSION=$(git tag -l --sort=-v:refname | head -n 1)
-            export CUR_VERSION=$(npx semver -c $CUR_VERSION)
-            npx semver -r ">=$CUR_VERSION" $CIRCLE_TAG
-            export VERSION=$(npx semver -c $CIRCLE_TAG)
-            # TODO: fix this for different languages (assumption: ruby gem)
+            # export CUR_VERSION=$(git tag -l --sort=-v:refname | head -n 1)
+            export CUR_VERSION=0.0.1
+            # export CUR_VERSION=$(npx semver -c $CUR_VERSION)
+            export VERSION=0.1.0
+            # # TODO: fix this for different languages (assumption: ruby gem)
             sed -i "s/'$CUR_VERSION'/'$VERSION'/" lib/kohi/version.rb
+            git add .
             git commit -m "[automated] feat: library upgrade to $VERSION"
-            git tag -a $CIRCLE_TAG -m "[automated] release $VERSION"
+            git tag -a "v$VERSION" -m "[automated] release $VERSION"
             git log -n 1
             git push --tags -u origin master
 
