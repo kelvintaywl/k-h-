@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  node: circleci/node@2.1.1
+
 commands:
   generate_package:
     description: generate package from Protobuf definitions
@@ -36,9 +39,9 @@ commands:
             cd kohi_<< parameters.language >>
             git add .
             export CUR_VERSION=$(git tag -l --sort=-v:refname | head -n 1)
-            export CUR_VERSION=$(semver -c $CUR_VERSION)
-            semver -r ">=$CUR_VERSION" $CIRCLE_TAG
-            export VERSION=$(semver -c $CIRCLE_TAG)
+            export CUR_VERSION=$(npx semver -c $CUR_VERSION)
+            npx semver -r ">=$CUR_VERSION" $CIRCLE_TAG
+            export VERSION=$(npx semver -c $CIRCLE_TAG)
             # TODO: fix this for different languages (assumption: ruby gem)
             sed -i "s/'$CUR_VERSION'/'$VERSION'/" lib/kohi/version.rb
             git commit -m "[automated] feat: library upgrade to $VERSION"
@@ -65,13 +68,12 @@ jobs:
 
   diff:
     docker:
-      - image: circleci/node:lts
+      - image: cimg/base:2020.01
     steps:
       - checkout
-      - run:
-          name: deps
-          command: |
-            npm install semver
+      - node/install:
+          node-version: 'lts'
+      - node/install-packages
       - git_diff:
           language: ruby
 

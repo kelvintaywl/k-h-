@@ -2,3 +2,6 @@
 generated/python/*
 generated/ruby/*
 !generated/*/.gitkeep
+
+# node modules
+node_modules
